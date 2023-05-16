@@ -1,7 +1,7 @@
 from abc import abstractmethod, ABC
 from typing import Union, Dict
 
-from transformers import PreTrainedTokenizer, PreTrainedTokenizerFast, TextStreamer, AutoTokenizer
+from transformers import PreTrainedTokenizer, PreTrainedTokenizerFast, AutoTokenizer #, TextStreamer
 
 
 class TokenStreamingHandler(ABC):
@@ -35,17 +35,19 @@ class DefaultTokenStreamingHandler(TokenStreamingHandler):
         print(token_received, flush=True, end="")
         return token_received
 
+class HFTokenStreamingHandler():
+    def __init__():
+        pass
+# class HFTokenStreamingHandler(TextStreamer):
+    # def __init__(
+        # self, tokenizer: Union[PreTrainedTokenizer, PreTrainedTokenizerFast], stream_handler: TokenStreamingHandler
+    # ):
+        # super().__init__(tokenizer=tokenizer)
+        # self.token_handler = stream_handler
 
-class HFTokenStreamingHandler(TextStreamer):
-    def __init__(
-        self, tokenizer: Union[PreTrainedTokenizer, PreTrainedTokenizerFast], stream_handler: TokenStreamingHandler
-    ):
-        super().__init__(tokenizer=tokenizer)
-        self.token_handler = stream_handler
-
-    def on_finalized_text(self, token: str, stream_end: bool = False):
-        token_to_send = token + "\n" if stream_end else token
-        self.token_handler(token_received=token_to_send, **{})
+    # def on_finalized_text(self, token: str, stream_end: bool = False):
+        # token_to_send = token + "\n" if stream_end else token
+        # self.token_handler(token_received=token_to_send, **{})
 
 
 class DefaultPromptHandler:

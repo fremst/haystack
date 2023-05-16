@@ -1,53 +1,28 @@
-# To allow your IDE to autocomplete and validate your YAML pipelines, name them as <name of your choice>.haystack-pipeline.yml
-
-version: ignore
-
-components:    # define all the building-blocks for Pipeline
+components:
   - name: DocumentStore
-    type: ElasticsearchDocumentStore
     params:
       host: localhost
+    type: ElasticsearchDocumentStore
   - name: Retriever
-    type: BM25Retriever
     params:
-      document_store: DocumentStore    # params can reference other components defined in the YAML
-      top_k: 5
-  - name: Reader       # custom-name for the component; helpful for visualization & debugging
-    type: FARMReader    # Haystack Class name for the component
+      document_store: DocumentStore
+      embedding_model: sentence-transformers/multi-qa-mpnet-base-dot-v1
+      model_format: sentence_transformers
+      top_k: 25
+    type: EmbeddingRetriever
+  - name: Reader
     params:
       model_name_or_path: deepset/roberta-base-squad2
-      context_window_size: 500
-      return_no_answer: true
-  - name: TextFileConverter
-    type: TextConverter
-  - name: PDFFileConverter
-    type: PDFToTextConverter
-  - name: Preprocessor
-    type: PreProcessor
-    params:
-      split_by: word
-      split_length: 1000
-  - name: FileTypeClassifier
-    type: FileTypeClassifier
-
+      use_gpu: true
+      top_k: 5
+    type: FARMReader
 pipelines:
-  - name: query    # a sample extractive-qa Pipeline
+  - name: query
     nodes:
-      - name: Retriever
-        inputs: [Query]
-      - name: Reader
-        inputs: [Retriever]
-  - name: indexing
-    nodes:
-      - name: FileTypeClassifier
-        inputs: [File]
-      - name: TextFileConverter
-        inputs: [FileTypeClassifier.output_1]
-      - name: PDFFileConverter
-        inputs: [FileTypeClassifier.output_2]
-      - name: Preprocessor
-        inputs: [PDFFileConverter, TextFileConverter]
-      - name: Retriever
-        inputs: [Preprocessor]
-      - name: DocumentStore
-        inputs: [Retriever]
+      - inputs:
+          - Query
+        name: Retriever
+      - inputs:
+          - Retriever
+        name: Reader
+version: 1.16.1rc
