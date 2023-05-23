@@ -1,0 +1,40 @@
+services:
+  haystack-api:
+    image: 'deepset/haystack:gpu' # (change) cpu -> gpu
+    volumes:
+      - ../../rest_api/rest_api/pipeline:/opt/pipelines
+    ports:
+      - 8000:8000
+    restart: on-failure
+    environment:
+      - DOCUMENTSTORE_PARAMS_HOST=elasticsearch
+      - PIPELINE_YAML_PATH=/opt/pipelines/pipelines.haystack-pipeline.yml
+      - TOKENIZERS_PARALLELISM=false
+      - NVIDIA_VISIBLE_DEVICES=all # (add) tells the Nvidia runtime which GPU devices are available to the application
+      - NVIDIA_DRIVER_CAPABILITIES=all # (add) specifies which CUDA features the driver supports.
+      # Uncomment the following line to customise how much time (in seconds) a worker can spend serving a request
+      # before it times out. This should include the time required to cache the models and setup the pipelines.
+
+      # - GUNICORN_CMD_ARGS="--timeout=3000"
+    runtime: nvidia # (add) enables the Nvidia runtime inside the container
+    devices: # (add) map the Nvidia GPU devices inside the container
+      - /dev/nvidia0:/dev/nvidia0
+      - /dev/nvidiactl:/dev/nvidiactl
+      - /dev/nvidia-uvm:/dev/nvidia-uvm
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+
+  elasticsearch:
+    image: 'docker.elastic.co/elasticsearch/elasticsearch:7.17.6'
+    ports:
+      - 9200:9200
+    restart: on-failure
+    environment:
+      - discovery.type=single-node
+      - 'ES_JAVA_OPTS=-Xms1024m -Xmx1024m'
+    healthcheck:
+      test: curl --fail http://localhost:9200/_cat/health || exit 1
+      interval: 10s
+      timeout: 1s
+      retries: 10
