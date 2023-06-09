@@ -2,14 +2,13 @@ import pickle
 import json
 import os
 from haystack.nodes.preprocessor import PreProcessor
-
 # from 구문 변경되어 수정함
 # PreProcessor import 시 오류 발생하여 아래 파일 임의로 수정함. 자세한 내용은 하단에 따로 작성
 # /haystack/nodes/prompt/invocation_layer/handlers.py
 
 if __name__ == '__main__':
 
-    resource = 'articles'
+    resource = 'paper'
     data_file = f'./data/biomimicry-{resource}.dat'
 
     if not os.path.exists(data_file):
@@ -25,23 +24,27 @@ if __name__ == '__main__':
 
             ids.append(item['id'])
             doc_dicts.append(
-                {"content": next((description["contents"]
-                                  for description in item["descriptions"] if description["language"] == "en"), None),
+                {"content": item['abstract'],
                  "meta": {
-                     "imageUrl": item['imageUrl'],
-                     "uuid": item['uuid'],
-                     "creationDate": item['creationDate'],
-                     "lastUpdateDate": item['lastUpdateDate'],
+                     "publicationYear": item['publicationYear'],
+                     "publicationMonth": item['publicationMonth'],
+                     "title": item['title'],
+                     "author": item['authors'],
+                     "meshHeadings": item['meshHeadings'],
+                     "meshSubheadings": item['meshSubheadings'],
+                     "doi": item['doi'],
                      "count": item['count'],
                      "heroOption": item['heroOption'],
                      "superheroOption": item['superheroOption'],
-                     "descriptions": item['descriptions']
-                 }
+                     "imageUrl": item['imageUrl'],
+                     "journal": item['journal'],
+                     "taxa": item['taxa']
+                    }
                  }
             )
 
     # print(ids)
-    print(doc_dicts)
+    # print(doc_dicts[0])
 
     processor = PreProcessor(split_by='word',
                              split_length=2000,

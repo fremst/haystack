@@ -9,7 +9,7 @@ from haystack.nodes.preprocessor import PreProcessor
 
 if __name__ == '__main__':
 
-    resource = 'patents'
+    resource = 'patent'
     data_file = f'./data/biomimicry-{resource}.dat'
 
     if not os.path.exists(data_file):
